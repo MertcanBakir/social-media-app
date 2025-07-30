@@ -2,12 +2,10 @@ const bcrypt = require("bcrypt");
 const prisma = require("../utils/prisma");
 const generateToken = require("../utils/generateToken");
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
   const { username, email, password } = req.body;
-  console.log("Register isteği alındı:", { username, email });
 
   if (!username || !email || !password) {
-    console.warn("Eksik alanlar:", { username, email, password });
     return res.status(400).json({ message: "Tüm alanlar zorunludur." });
   }
 
@@ -28,22 +26,19 @@ const register = async (req, res) => {
       },
     });
 
-    console.log("Kullanıcı başarıyla oluşturuldu:", user);
     res.status(201).json({ user });
-  } catch (error) {
-    console.error("Kayıt hatası:", error);
-    if (error.code === "P2002") {
-      console.warn("Benzersiz alan çakışması: email veya username zaten var.");
-      return res.status(409).json({ message: "Kullanıcı zaten var." });
+  } catch (err) {
+    if (err.code === "P2002") {
+      const error = new Error("Kullanıcı zaten var.");
+      error.statusCode = 409;
+      return next(error);
     }
-    res.status(500).json({ message: "Bir hata oluştu." });
+    next(err);
   }
 };
 
-
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body;
-  console.log("Giriş denemesi:", { email });
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email ve şifre zorunludur." });
@@ -52,19 +47,13 @@ const login = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
 
-    if (!user) {
-      console.warn("Kullanıcı bulunamadı");
-      return res.status(401).json({ message: "Geçersiz kimlik bilgileri." });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      console.warn("Şifre yanlış");
-      return res.status(401).json({ message: "Geçersiz kimlik bilgileri." });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      const error = new Error("Geçersiz kimlik bilgileri.");
+      error.statusCode = 401;
+      return next(error);
     }
 
     const token = generateToken(user.id);
-    console.log("Giriş başarılı, token üretildi");
 
     res
       .cookie("token", token, {
@@ -82,13 +71,12 @@ const login = async (req, res) => {
           created_at: user.created_at,
         },
       });
-  } catch (error) {
-    console.error("Giriş hatası:", error);
-    res.status(500).json({ message: "Bir hata oluştu." });
+  } catch (err) {
+    next(err);
   }
 };
 
-const me = async (req, res) => {
+const me = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.userId },
@@ -101,13 +89,14 @@ const me = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "Kullanıcı bulunamadı." });
+      const error = new Error("Kullanıcı bulunamadı.");
+      error.statusCode = 404;
+      return next(error);
     }
 
     res.status(200).json({ user });
   } catch (err) {
-    console.error("Kullanıcı bilgisi alınamadı:", err);
-    res.status(500).json({ message: "Bir hata oluştu." });
+    next(err);
   }
 };
 
@@ -118,11 +107,10 @@ const logout = async (req, res) => {
     sameSite: "strict",
   });
 
-  console.log("Kullanıcı çıkış yaptı");
   res.status(200).json({ message: "Çıkış yapıldı." });
 };
 
-const changePassword = async (req, res) => {
+const changePassword = async (req, res, next) => {
   const { currentPassword, newPassword } = req.body;
   const userId = req.user.userId;
 
@@ -134,12 +122,16 @@ const changePassword = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
-      return res.status(404).json({ message: "Kullanıcı bulunamadı." });
+      const error = new Error("Kullanıcı bulunamadı.");
+      error.statusCode = 404;
+      return next(error);
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Geçerli şifre hatalı." });
+      const error = new Error("Geçerli şifre hatalı.");
+      error.statusCode = 401;
+      return next(error);
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
@@ -149,11 +141,9 @@ const changePassword = async (req, res) => {
       data: { password: hashedNewPassword },
     });
 
-    console.log("Şifre başarıyla değiştirildi:", user.email);
     res.status(200).json({ message: "Şifre başarıyla güncellendi." });
   } catch (err) {
-    console.error("Şifre değiştirme hatası:", err);
-    res.status(500).json({ message: "Bir hata oluştu." });
+    next(err);
   }
 };
 
@@ -162,5 +152,5 @@ module.exports = {
   login,
   me,
   logout,
-  changePassword
+  changePassword,
 };
