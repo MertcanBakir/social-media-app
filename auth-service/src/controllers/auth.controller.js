@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const prisma = require("../utils/prisma");
 const generateToken = require("../utils/generateToken");
+const publishUserCreated = require("../events/publishUserCreated");
 
 const register = async (req, res, next) => {
   const { username, email, password } = req.body;
@@ -25,6 +26,8 @@ const register = async (req, res, next) => {
         created_at: true,
       },
     });
+
+    await publishUserCreated(user);
 
     res.status(201).json({ user });
   } catch (err) {

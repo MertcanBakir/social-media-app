@@ -1,4 +1,8 @@
 const prisma = require("../utils/prisma");
+const requestUserByUsername = require("../events/requestUserByUsername");
+const { producer, consumer } = require("../utils/kafkaClient");
+const { v4: uuidv4 } = require("uuid");
+
 
 const generateProfile = async (req, res, next) => {
   const { bio, location } = req.body;
@@ -87,34 +91,55 @@ const getProfile = async (req, res, next) => {
   }
 };
 
+function waitForResponse(correlationId) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Timeout: Kullanıcı bilgisi alınamadı."));
+    }, 5000); // 5 saniye sonra pes eder
+
+    const onMessage = async ({ message }) => {
+      const { correlationId: incomingId, data } = JSON.parse(message.value.toString());
+      if (incomingId === correlationId) {
+        clearTimeout(timeout);
+        consumer.pause([{ topic: "user.fetched" }]); // Listener’ı durdur
+        resolve(data);
+      }
+    };
+
+    consumer.run({
+      eachMessage: onMessage,
+    });
+  });
+}
+
 const getDiffProfile = async (req, res, next) => {
   const { username } = req.params;
 
   try {
-    const profile = await prisma.userProfile.findFirst({
-      where: {
-        user: {
-          username: username,
-        },
-      },
-      include: {
-        user: {
-          select: {
-            username: true,
-            email: true,
-            created_at: true,
-          },
-        },
-      },
+    const user = await requestUserByUsername(username); // ✅ BURASI YENİ
+
+    if (!user) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı." });
+    }
+
+    const profile = await prisma.userProfile.findUnique({
+      where: { userId: user.id },
     });
 
     if (!profile) {
-      const error = new Error("Profil bulunamadı.");
-      error.statusCode = 404;
-      return next(error);
+      return res.status(404).json({ message: "Profil bulunamadı." });
     }
 
-    res.status(200).json({ profile });
+    res.status(200).json({
+      profile: {
+        ...profile,
+        user: {
+          username: user.username,
+          email: user.email,
+          created_at: user.created_at,
+        },
+      },
+    });
   } catch (err) {
     next(err);
   }
@@ -123,5 +148,6 @@ const getDiffProfile = async (req, res, next) => {
 module.exports = {
   generateProfile,
   getProfile,
-  changeProfile
+  changeProfile,
+  getDiffProfile
 };
