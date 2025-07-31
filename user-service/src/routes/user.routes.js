@@ -1,7 +1,7 @@
 const express = require("express");
 const upload = require("../utils/cloudinary");
 const authMiddleware = require("../middlewares/authMiddleware");
-const { generateProfile, getProfile, changeProfile , getDiffProfile} = require("../controllers/user.controller");
+const { generateProfile, getProfile, changeProfile , getDiffProfile, searchUsersByUsername} = require("../controllers/user.controller");
 const router = express.Router();
 
 router.post("/upload", upload.single("image"), (req, res) => {
@@ -30,6 +30,7 @@ router.put(
 
 router.get("/profile/me", authMiddleware, getProfile);
 router.get("/profile/:username", getDiffProfile);
+router.get("/users/search", searchUsersByUsername);
 
 
 

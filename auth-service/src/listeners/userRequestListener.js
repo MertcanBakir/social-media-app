@@ -9,6 +9,7 @@ async function startUserRequestListener() {
       try {
         const { type, correlationId, data } = JSON.parse(message.value.toString());
 
+        // 👉 Username'e göre kullanıcı getir
         if (type === "user.fetchByUsername") {
           const { username } = data;
 
@@ -38,6 +39,61 @@ async function startUserRequestListener() {
 
           console.log(`✅ Kullanıcı bulundu ve cevap gönderildi: ${username}`);
         }
+
+        // 🔍 Username arama sorgusu
+        if (type === "user.searchByUsername") {
+          const { query } = data;
+
+          const startsWithMatches = await prisma.user.findMany({
+            where: {
+              username: {
+                startsWith: query,
+                mode: "insensitive",
+              },
+            },
+            select: {
+              username: true,
+            },
+            take: 10,
+          });
+
+          const containsMatches = await prisma.user.findMany({
+            where: {
+              username: {
+                contains: query,
+                mode: "insensitive",
+              },
+            },
+            select: {
+              username: true,
+            },
+            take: 10,
+          });
+
+          const merged = [
+            ...startsWithMatches,
+            ...containsMatches.filter(
+              (item) => !startsWithMatches.find((start) => start.username === item.username)
+            ),
+          ].slice(0, 10);
+
+          await producer.send({
+            topic: "user-service-topic",
+            messages: [
+              {
+                key: correlationId,
+                value: JSON.stringify({
+                  type: "user.searched",
+                  correlationId,
+                  data: merged,
+                }),
+              },
+            ],
+          });
+
+          console.log(`🔍 Arama sonucu gönderildi: "${query}"`);
+        }
+
       } catch (err) {
         console.error("❌ Kafka mesajı işlenirken hata:", err);
       }

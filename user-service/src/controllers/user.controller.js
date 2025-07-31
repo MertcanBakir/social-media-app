@@ -1,6 +1,7 @@
 const prisma = require("../utils/prisma");
 const requestUserByUsername = require("../events/requestUserByUsername");
 const { producer, consumer } = require("../utils/kafkaClient");
+const requestUsersByQuery = require("../events/requestUsersByQuery");
 const { v4: uuidv4 } = require("uuid");
 
 
@@ -145,9 +146,29 @@ const getDiffProfile = async (req, res, next) => {
   }
 };
 
+
+const searchUsersByUsername = async (req, res, next) => {
+  const query = req.query.query?.toLowerCase();
+  if (!query || query.trim() === "") {
+    return res.status(400).json({ message: "Arama sorgusu boş olamaz." });
+  }
+
+  try {
+    const results = await requestUsersByQuery(query);
+    if (!results || results.length === 0) {
+      return res.status(404).json({ message: "Kullanıcı bulunamadı." });
+    }
+
+    res.status(200).json(results);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   generateProfile,
   getProfile,
   changeProfile,
-  getDiffProfile
+  getDiffProfile,
+  searchUsersByUsername
 };

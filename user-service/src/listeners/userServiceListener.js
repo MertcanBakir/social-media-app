@@ -38,6 +38,10 @@ async function userServiceListener() {
         resolvePendingRequest(correlationId, data);
         console.log(`📨 user.fetched alındı ve yanıt çözüldü: ${correlationId}`);
       }
+      if (type === "user.searched" && correlationId) {
+        resolvePendingRequest(correlationId, data);
+        console.log(`📨 Arama sonucu geldi: ${correlationId}`);
+      }
     },
   });
 }
