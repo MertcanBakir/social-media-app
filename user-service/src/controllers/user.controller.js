@@ -117,7 +117,7 @@ const getDiffProfile = async (req, res, next) => {
   const { username } = req.params;
 
   try {
-    const user = await requestUserByUsername(username); // ✅ BURASI YENİ
+    const user = await requestUserByUsername(username);
 
     if (!user) {
       return res.status(404).json({ message: "Kullanıcı bulunamadı." });
@@ -131,6 +131,8 @@ const getDiffProfile = async (req, res, next) => {
       return res.status(404).json({ message: "Profil bulunamadı." });
     }
 
+    const followStats = await requestFollowStats(user.id);
+
     res.status(200).json({
       profile: {
         ...profile,
@@ -139,6 +141,8 @@ const getDiffProfile = async (req, res, next) => {
           email: user.email,
           created_at: user.created_at,
         },
+        followersCount: followStats?.followersCount || 0,
+        followingCount: followStats?.followingCount || 0,
       },
     });
   } catch (err) {

@@ -1,13 +1,76 @@
 const { consumer, producer } = require("../utils/kafkaClient");
 const prisma = require("../utils/prisma");
 
-async function startUserRequestListener() {
+async function authServiceListener() {
   await consumer.subscribe({ topic: "auth-service-topic", fromBeginning: false });
 
   await consumer.run({
     eachMessage: async ({ message }) => {
       try {
         const { type, correlationId, data } = JSON.parse(message.value.toString());
+        if(type === "auth-user-info-request"){
+            const { ids } = data;
+            try{
+              const users = await prisma.user.findMany({
+                where: {
+                  id: { in: ids },
+                },
+                select: {
+                  id: true,
+                  username: true,
+                },
+              });
+
+              await producer.send({
+                topic: "follow-service-topic",
+                messages: [
+                  {
+                    key: correlationId,
+                    value: JSON.stringify({
+                      type: "auth-user-info-result",
+                      correlationId,
+                      data: users,
+                    }),
+                  },
+                ],
+              });
+              console.log(`📤 auth-user-info-result gönderildi: ${correlationId}`);
+            }catch(err){
+              console.error("❌ auth-user-info-request işlenirken hata:", err);
+            }
+        }
+        if (type === "auth-user-info-following-request") {
+          const { ids } = data;
+          try {
+            const users = await prisma.user.findMany({
+              where: {
+                id: { in: ids },
+              },
+              select: {
+                id: true,
+                username: true,
+              },
+            });
+
+            await producer.send({
+              topic: "follow-service-topic",
+              messages: [
+                {
+                  key: correlationId,
+                  value: JSON.stringify({
+                    type: "auth-user-info-following-result",
+                    correlationId,
+                    data: users,
+                  }),
+                },
+              ],
+            });
+
+            console.log(`📤 auth-user-info-following-result gönderildi: ${correlationId}`);
+          } catch (err) {
+            console.error("❌ auth-user-info-following-request işlenirken hata:", err);
+          }
+        }
 
         // 👉 Username'e göre kullanıcı getir
         if (type === "user.fetchByUsername") {
@@ -101,4 +164,4 @@ async function startUserRequestListener() {
   });
 }
 
-module.exports = startUserRequestListener;
+module.exports = authServiceListener;

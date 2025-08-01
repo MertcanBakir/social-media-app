@@ -1,5 +1,3 @@
-// events/publishUserCreated.js
-
 const { producer } = require("../utils/kafkaClient");
 
 async function publishUserCreated(user) {

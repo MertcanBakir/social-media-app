@@ -33,7 +33,6 @@ async function userServiceListener() {
           }
         }
       }
-
       if (type === "user.fetched" && correlationId) {
         resolvePendingRequest(correlationId, data);
         console.log(`📨 user.fetched alındı ve yanıt çözüldü: ${correlationId}`);
@@ -41,6 +40,10 @@ async function userServiceListener() {
       if (type === "user.searched" && correlationId) {
         resolvePendingRequest(correlationId, data);
         console.log(`📨 Arama sonucu geldi: ${correlationId}`);
+      }
+      if (type === "follow.follownums.result" && correlationId) {
+        resolvePendingRequest(correlationId, data);
+        console.log(`📨 Takip verisi alındı: ${correlationId}`);
       }
     },
   });

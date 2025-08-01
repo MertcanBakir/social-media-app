@@ -31,7 +31,6 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 7362170Mm.
-      POSTGRES_DB: socialapp
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -62,6 +61,20 @@ services:
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_user_db
     volumes:
       - ./user-service:/app
+
+  follow-service:
+    build: ./follow-service
+    platform: linux/amd64
+    ports:
+      - "6003:6003"
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_follow_db
+    volumes:
+      - ./follow-service:/app
 
 volumes:
   pgdata:

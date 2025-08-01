@@ -5,7 +5,7 @@ require("dotenv").config();
 const cookieParser = require("cookie-parser");
 
 const { producer } = require("./utils/kafkaClient");
-const startUserRequestListener = require("./listeners/userRequestListener");
+const authServiceListener = require("./listeners/authServiceListener");
 const authRoutes = require("./routes/auth.routes");
 const errorHandler = require("./middlewares/errorHandler");
 
@@ -32,7 +32,7 @@ async function start() {
     console.log("✅ Kafka producer bağlı");
 
     // Kafka consumer listener'ı başlat
-    await startUserRequestListener();
+    await authServiceListener();
     console.log("✅ Kafka consumer dinleyici aktif");
 
     // Express sunucusunu başlat
