@@ -1,0 +1,22 @@
+# Ortak node_modules
+node_modules
+**/node_modules
+
+# Git
+.git
+.gitignore
+
+# Geliştirme dosyaları
+.env
+*.log
+
+# Build artefact'ları
+dist
+build
+.next
+out
+coverage
+turbo
+
+# Prisma Client klasörlerini dışlama!
+!apps/**/generated

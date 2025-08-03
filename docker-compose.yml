@@ -27,54 +27,84 @@ services:
     platform: linux/amd64
     restart: always
     ports:
-      - "5433:5432"
+      - "5433:5432" # dışarıya 5433 olarak açılıyor
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 7362170Mm.
     volumes:
-      - pgdata:/var/lib/postgresql/data
-
+    - pgdata:/var/lib/postgresql/data
+    
   auth-service:
-    build: ./auth-service
-    platform: linux/amd64
+    build: .
+    command: ["auth-service", "6000"]
     ports:
       - "6000:6000"
+    volumes:
+      - .:/app
+      - ./apps/auth-service/.env:/app/apps/auth-service/.env
+    working_dir: /app
+    env_file:
+      - ./apps/auth-service/.env
     depends_on:
-      - kafka
       - postgres
+      - kafka
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_auth_db
-    volumes:
-      - ./auth-service:/app
 
   user-service:
-    build: ./user-service
-    platform: linux/amd64
+    build: .
+    command: ["user-service", "6001"]
     ports:
       - "6001:6001"
+    volumes:
+      - .:/app
+      - ./apps/user-service/.env:/app/apps/user-service/.env
+    working_dir: /app
+    env_file:
+      - ./apps/user-service/.env
     depends_on:
-      - kafka
       - postgres
+      - kafka
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_user_db
-    volumes:
-      - ./user-service:/app
 
   follow-service:
-    build: ./follow-service
-    platform: linux/amd64
+    build: .
+    command: ["follow-service", "6003"]
     ports:
       - "6003:6003"
+    volumes:
+      - .:/app
+      - ./apps/follow-service/.env:/app/apps/follow-service/.env
+    working_dir: /app
+    env_file:
+      - ./apps/follow-service/.env
     depends_on:
-      - kafka
       - postgres
+      - kafka
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_follow_db
+
+  tweet-service:
+    build: .
+    command: ["tweet-service", "6002"]
+    ports:
+      - "6002:6002"
     volumes:
-      - ./follow-service:/app
+      - .:/app
+      - ./apps/tweet-service/.env:/app/apps/tweet-service/.env
+    working_dir: /app
+    env_file:
+      - ./apps/tweet-service/.env
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_tweet_db
 
 volumes:
   pgdata:

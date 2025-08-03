@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+  output          = "../generated"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique                      // auth-service'den gelen user id
+  bio          String?                               // Hakkında
+  profileImage String?                               // Profil resmi URL
+  coverImage   String?                               // Kapak fotoğrafı URL
+  location     String?                               // Lokasyon
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("user_profiles") // Veritabanında tablo adı küçük harfle
+}
