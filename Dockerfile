@@ -1,25 +1,45 @@
-FROM node:20
+# --- 1. Aşama: Build ve bağımlılıkların kurulumu ---
+FROM node:20-alpine AS builder
 
 # Sistem bağımlılıkları
-RUN apt-get update && apt-get install -y netcat-openbsd
+RUN apk add --no-cache netcat-openbsd
 
-# Ana çalışma dizini
+# Uygulama kök dizini
 WORKDIR /app
 
-# Tüm proje dosyalarını kopyala (package.json, turbo.json, apps, packages, vs.)
+# package.json ve lock dosyalarını kopyala
+COPY package*.json ./
+
+# Üretim bağımlılıklarını kur
+RUN npm ci --omit=dev
+
+# Geri kalan dosyaları kopyala
 COPY . .
 
+# Prisma generate işlemi dahilse burada yapılabilir
+# npx prisma generate vs. gibi (isteğe bağlı)
+
+# --- 2. Aşama: Hafif üretim imajı ---
+FROM node:20-alpine
+
+# Sistem bağımlılıkları
+RUN apk add --no-cache netcat-openbsd
+
+# Çalışma dizini
+WORKDIR /app
+
+# build aşamasından sadece gerekli dosyaları al
+COPY --from=builder /app /app
+
 # Script izinlerini ver
-RUN chmod +x /app/packages/wait-for-it.sh
-RUN chmod +x /app/packages/docker-entrypoint.sh
+RUN chmod +x /app/packages/*.sh
 
-# Workspace'lerdeki tüm bağımlılıkları kur
-RUN npm install
-
-ENV NODE_PATH=/app
+# Gereksiz kullanıcıları silip güvenli kullanıcı oluştur
+RUN addgroup -g 1001 -S nodejs && adduser -S appuser -u 1001
+USER appuser
 
 # Uygulama portu
 EXPOSE 6000
 
-# Entrypoint olarak scripti belirle
+# Başlatma komutu
 ENTRYPOINT ["/app/packages/docker-entrypoint.sh"]

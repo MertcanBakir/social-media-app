@@ -35,6 +35,3 @@ turbo
 # misc
 *.local
 *.pid
-
-# docker bind mount unintended files
-init sql/
