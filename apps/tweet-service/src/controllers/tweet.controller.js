@@ -1,7 +1,22 @@
 const prisma = require("../utils/prisma");
 const cloudinary = require("cloudinary").v2;
-const requestUserByUsername = require("../events/requestFollow");
+const requestUserByUsername = require("../events/requestUserByUsername");
 const requestFollowingIds = require("../events/requestFollowingIds");
+const requestLikeCounts = require("../events/requestLikeCounts");
+const sendTweetDeletion = require("../events/sendTweetDeletion");
+
+const getLikeCounts = async (tweets) => {
+  const tweetIds = tweets.map(tweet => tweet.id);
+  return await requestLikeCounts(tweetIds);
+};
+
+const attachLikeCounts = async (tweets) => {
+  const likeCounts = await getLikeCounts(tweets);
+  return tweets.map(tweet => ({
+    ...tweet,
+    likeCount: likeCounts[tweet.id] || 0
+  }));
+};
 
 const getCloudinaryPublicId = (mediaUrl) => {
   const url = decodeURIComponent(mediaUrl); // %20 gibi karakterleri çözer
@@ -91,8 +106,10 @@ const getTweets = async (req, res, next) => {
       prisma.tweet.count(),
     ]);
 
+    const tweetsWithLikes = await attachLikeCounts(tweets);
+
     return res.status(200).json({
-      tweets,
+      tweets: tweetsWithLikes,
       totalCount: count,
       totalPages: Math.ceil(count / pageSize),
       currentPage: page,
@@ -149,11 +166,12 @@ const getFollowingTweet = async (req, res, next) => {
       }),
     ]);
 
+    const tweetsWithLikes = await attachLikeCounts(tweets);
     const totalPages = Math.ceil(count / pageSize);
     const hasMore = page < totalPages;
 
     return res.status(200).json({
-      tweets,
+      tweets: tweetsWithLikes,
       totalCount: count,
       totalPages,
       currentPage: page,
@@ -196,8 +214,17 @@ const getUserTweet = async (req, res, next) => {
       }),
     ]);
 
+    // 🔁 Like count'ları topla ve birleştir
+    const likeCounts = await requestLikeCounts(tweets.map(t => t.id));
+    const tweetsWithLikes = tweets.map(tweet => ({
+      ...tweet,
+      likeCount: likeCounts[tweet.id] || 0
+    }));
+
+    console.log("🔢 Like counts:", likeCounts); // ✅ artık tanımlı
+
     return res.status(200).json({
-      tweets,
+      tweets: tweetsWithLikes,
       totalCount: count,
       totalPages: Math.ceil(count / pageSize),
       currentPage: page,
@@ -228,11 +255,12 @@ const getMyTweet = async (req, res, next) => {
       prisma.tweet.count({ where: { authorId } }),
     ]);
 
+    const tweetsWithLikes = await attachLikeCounts(tweets);
     const totalPages = Math.ceil(count / pageSize);
     const hasMore = page < totalPages;
 
     return res.status(200).json({
-      tweets,
+      tweets: tweetsWithLikes,
       totalCount: count,
       totalPages,
       currentPage: page,
@@ -279,6 +307,8 @@ const deleteTweet = async (req, res, next) => {
     await prisma.tweet.delete({
       where: { id: tweetId },
     });
+
+   sendTweetDeletion(tweetId);
 
     return res.status(200).json({ message: "Tweet başarıyla silindi." });
   } catch (err) {

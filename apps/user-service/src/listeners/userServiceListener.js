@@ -3,7 +3,6 @@ const prisma = require("../utils/prisma");
 const { resolvePendingRequest } = require("../utils/pendingRequests"); 
 
 async function userServiceListener() {
-  await consumer.connect();
   await consumer.subscribe({ topic: "user-service-topic", fromBeginning: false });
 
   await consumer.run({

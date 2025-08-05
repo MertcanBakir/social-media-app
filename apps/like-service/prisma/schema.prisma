@@ -1,0 +1,20 @@
+
+generator client {
+  provider = "prisma-client-js"
+  output          = "../generated"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  tweetId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tweetId]) // her kullanıcı bir tweeti 1 kez beğenebilir
+}

@@ -3,7 +3,7 @@
 SERVICE_NAME=$1
 PORT=$2
 
-/app/packages/wait-for-it.sh kafka:9092 -t 30
+/app/packages/wait-for-it.sh kafka 9092 30
 
 echo "⏳ Waiting for Postgres..."
 until nc -z postgres 5432; do

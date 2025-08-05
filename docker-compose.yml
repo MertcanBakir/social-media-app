@@ -21,6 +21,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   postgres:
     image: postgres:15
@@ -46,8 +51,10 @@ services:
     env_file:
       - ./apps/auth-service/.env
     depends_on:
-      - postgres
-      - kafka
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_auth_db
@@ -64,8 +71,10 @@ services:
     env_file:
       - ./apps/user-service/.env
     depends_on:
-      - postgres
-      - kafka
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_user_db
@@ -82,8 +91,10 @@ services:
     env_file:
       - ./apps/follow-service/.env
     depends_on:
-      - postgres
-      - kafka
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_follow_db
@@ -100,11 +111,33 @@ services:
     env_file:
       - ./apps/tweet-service/.env
     depends_on:
-      - postgres
-      - kafka
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_tweet_db
+      
+  like-service:
+    build: .
+    command: ["like-service", "6004"]
+    ports:
+      - "6004:6004"
+    volumes:
+      - .:/app
+      - ./apps/like-service/.env:/app/apps/like-service/.env
+    working_dir: /app
+    env_file:
+      - ./apps/like-service/.env
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_like_db
 
 volumes:
   pgdata:

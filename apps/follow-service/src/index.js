@@ -6,7 +6,7 @@ require("dotenv").config();
 
 const errorHandler = require("/app/packages/errorHandler");
 const followRoutes = require("./routes/follow.routes");
-const { producer } = require("./utils/kafkaClient");
+const { producer, consumer } = require("./utils/kafkaClient");
 const followServiceListener = require("./listeners/followServiceListener");
 
 const app = express();
@@ -21,13 +21,28 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 6003;
 
+async function waitForKafkaConsumer() {
+  let connected = false;
+  while (!connected) {
+    try {
+      await consumer.connect();
+      connected = true;
+    } catch (err) {
+      console.log("⏳ Kafka consumer bekliyor...");
+      await new Promise((res) => setTimeout(res, 2000));
+    }
+  }
+}
+
 async function startServer() {
   try {
     await producer.connect(); 
     console.log("📡 Kafka producer bağlandı.");
 
+    await waitForKafkaConsumer();
+    console.log("✅ Kafka consumer bağlı");
+
     await followServiceListener();
-    console.log("👂 Follow service listener aktif.");
 
     app.listen(PORT, () => {
       console.log(`✅ Follow service running on port ${PORT}`);

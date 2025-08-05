@@ -2,7 +2,7 @@ const { producer } = require("../utils/kafkaClient");
 const { v4: uuidv4 } = require("uuid");
 const { addPendingRequest } = require("../utils/pendingRequests");
 
-async function requestFollowingIds(userId) {
+async function requestUserByUsername(username) {
   const correlationId = uuidv4();
 
   return new Promise(async (resolve, reject) => {
@@ -15,7 +15,7 @@ async function requestFollowingIds(userId) {
           value: JSON.stringify({
             type: "tweet.usernametoıd",
             correlationId,
-            data: { userId },
+            data: { username },
           }),
         },
       ],
@@ -23,4 +23,4 @@ async function requestFollowingIds(userId) {
   });
 }
 
-module.exports = requestFollowingIds;
+module.exports = requestUserByUsername;

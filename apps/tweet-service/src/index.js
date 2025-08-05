@@ -3,7 +3,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 require("dotenv").config();
-const { producer } = require("./utils/kafkaClient");
+const { producer, consumer } = require("./utils/kafkaClient");
 const tweetRoutes = require("./routes/tweet.routes");
 const errorHandler = require("/app/packages/errorHandler");
 const tweetServiceListener = require("./listeners/tweetServiceListener");
@@ -20,12 +20,28 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 6002;
 
+async function waitForKafkaConsumer() {
+  let connected = false;
+  while (!connected) {
+    try {
+      await consumer.connect();
+      connected = true;
+    } catch (err) {
+      console.log("⏳ Kafka consumer bekliyor...");
+      await new Promise((res) => setTimeout(res, 2000));
+    }
+  }
+}
+
 async function startServer() {
   try {
     await producer.connect();
     console.log("✅ Kafka producer bağlı");
 
-    await tweetServiceListener();
+    await waitForKafkaConsumer(); // 👈 burada bekletiyoruz
+    console.log("✅ Kafka consumer bağlı");
+
+    await tweetServiceListener(); // 👈 artık listener'ı başlatmak güvenli
 
     app.listen(PORT, () => {
       console.log(`✅ Tweet service running on port ${PORT}`);

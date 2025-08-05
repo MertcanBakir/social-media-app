@@ -3,7 +3,6 @@ const prisma = require("../utils/prisma");
 const { resolvePendingRequest } = require("../utils/pendingRequests"); 
 
 async function tweetServiceListener() {
-  await consumer.connect();
   await consumer.subscribe({ topic: "tweet-service-topic", fromBeginning: false });
 
   await consumer.run({
@@ -16,6 +15,17 @@ async function tweetServiceListener() {
       if (type === "tweet.followingIds.result" && correlationId) {
         resolvePendingRequest(correlationId, data); 
         console.log(`📨 tweet.followingIds.result alındı ve çözüldü: ${correlationId}`);
+      }
+      if (type === "tweet.likeCounts.result" && correlationId) {
+        resolvePendingRequest(correlationId, data);
+      }
+      if (type === "tweet.likeCounts.error" && correlationId) {
+        console.error(`❌ Like count alınamadı: ${data?.error || "Bilinmeyen hata"}`);
+        resolvePendingRequest(correlationId, { error: data?.error || "Like sayısı alınamadı" });
+      }
+      if (type === "tweet.usernametoıd.result" && correlationId) {
+        resolvePendingRequest(correlationId, data);
+        console.log(`📨 tweet.usernametoıd.result alındı ve çözüldü: ${correlationId}`);
       }
 
 
