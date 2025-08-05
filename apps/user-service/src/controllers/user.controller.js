@@ -2,7 +2,6 @@ const prisma = require("../utils/prisma");
 const requestUserByUsername = require("../events/requestUserByUsername");
 const { producer, consumer } = require("../utils/kafkaClient");
 const requestUsersByQuery = require("../events/requestUsersByQuery");
-const { v4: uuidv4 } = require("uuid");
 
 
 const generateProfile = async (req, res, next) => {

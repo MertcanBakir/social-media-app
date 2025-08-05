@@ -11,33 +11,27 @@ const errorHandler = require("/app/packages/errorHandler");
 
 const app = express();
 
-// Middleware'ler
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-// Route'lar
 app.use("/auth", authRoutes);
 
-// Error handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 6000;
 
 async function start() {
   try {
-    // Kafka bağlantısını başlat
     await producer.connect();
     console.log("✅ Kafka producer bağlı");
 
-    // Kafka consumer listener'ı başlat
     await authServiceListener();
     console.log("✅ Kafka consumer dinleyici aktif");
 
-    // Express sunucusunu başlat
     app.listen(PORT, () => {
-      console.log(`✅ Auth service port ${PORT} üzerinden çalışıyor`);
+      console.log(`✅ Auth service running on port ${PORT}`);
     });
 
   } catch (error) {

@@ -1,13 +1,15 @@
 const express = require("express");
 const authMiddleware = require("/app/packages/authMiddleware");
-const {createPostwVideo, createPostwImage, createTweet } = require("../controllers/tweet.controller");
+const {createTweet, getTweets, getFollowingTweet,getUserTweet , deleteTweet, getMyTweet} = require("../controllers/tweet.controller");
+const upload = require("../utils/cloudinary");
 const router = express.Router();
 
-
-
-router.post("/create/video", authMiddleware, createPostwVideo);
-router.post("/create/image", authMiddleware, createPostwImage);
-router.post("/create/tweet", authMiddleware, createTweet);
+router.post("/create", authMiddleware, upload.single("file"), createTweet);
+router.get("/tweet", getTweets);
+router.get("/following", authMiddleware, getFollowingTweet);
+router.get("/my", authMiddleware, getMyTweet);
+router.get("/username", getUserTweet);
+router.delete("/delete", authMiddleware, deleteTweet);
 
 
 

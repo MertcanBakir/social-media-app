@@ -53,6 +53,36 @@ async function followServiceListener() {
         resolvePendingRequest(correlationId, data); // data: [{ id, username }, ...]
         console.log(`📥 auth-user-info-following-result alındı: ${correlationId}`);
       }
+      if (type === "tweet.followingIds" && correlationId) {
+        const { userId } = data;
+
+        try {
+          const following = await prisma.follow.findMany({
+            where: { followerId: userId },
+            select: { followingId: true },
+          });
+
+          const followingIds = following.map(f => f.followingId);
+
+          await producer.send({
+            topic: "tweet-service-topic",
+            messages: [
+              {
+                key: correlationId,
+                value: JSON.stringify({
+                  type: "tweet.followingIds.result",
+                  correlationId,
+                  data: followingIds,
+                }),
+              },
+            ],
+          });
+
+          console.log(`📨 followingIds gönderildi: ${userId}`);
+        } catch (err) {
+          console.error("❌ followingIds alınırken hata:", err);
+        }
+      }
     },
   });
 }

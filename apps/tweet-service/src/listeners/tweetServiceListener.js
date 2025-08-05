@@ -9,6 +9,14 @@ async function tweetServiceListener() {
   await consumer.run({
     eachMessage: async ({ message }) => {
       const { type, data, correlationId } = JSON.parse(message.value.toString());
+      if (type === "tweet.fetched" && correlationId) {
+        resolvePendingRequest(correlationId, data);
+        console.log(`📨 tweet.fetched alındı ve yanıt çözüldü: ${correlationId}`);
+      }
+      if (type === "tweet.followingIds.result" && correlationId) {
+        resolvePendingRequest(correlationId, data); 
+        console.log(`📨 tweet.followingIds.result alındı ve çözüldü: ${correlationId}`);
+      }
 
 
     },

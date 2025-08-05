@@ -102,6 +102,35 @@ async function authServiceListener() {
 
           console.log(`✅ Kullanıcı bulundu ve cevap gönderildi: ${username}`);
         }
+        if (type === "tweet.fetchByUsername") {
+          const { username } = data;
+
+          const user = await prisma.user.findUnique({
+            where: { username },
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              created_at: true,
+            },
+          });
+
+          await producer.send({
+            topic: "tweet-service-topic",
+            messages: [
+              {
+                key: correlationId,
+                value: JSON.stringify({
+                  type: "tweet.fetched",
+                  correlationId,
+                  data: user || null,
+                }),
+              },
+            ],
+          });
+
+          console.log(`✅ Kullanıcı bulundu ve tweet servisine cevap gönderildi: ${username}`);
+        }
 
         // 🔍 Username arama sorgusu
         if (type === "user.searchByUsername") {

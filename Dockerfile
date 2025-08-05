@@ -13,11 +13,8 @@ COPY package*.json ./
 # Üretim bağımlılıklarını kur
 RUN npm ci --omit=dev
 
-# Geri kalan dosyaları kopyala
-COPY . .
 
-# Prisma generate işlemi dahilse burada yapılabilir
-# npx prisma generate vs. gibi (isteğe bağlı)
+COPY . .
 
 # --- 2. Aşama: Hafif üretim imajı ---
 FROM node:20-alpine
@@ -38,8 +35,6 @@ RUN chmod +x /app/packages/*.sh
 RUN addgroup -g 1001 -S nodejs && adduser -S appuser -u 1001
 USER appuser
 
-# Uygulama portu
 EXPOSE 6000
 
-# Başlatma komutu
 ENTRYPOINT ["/app/packages/docker-entrypoint.sh"]
