@@ -25,3 +25,19 @@ Servisler arası iletişim Kafka üzerinden gerçekleşir. API Gateway tüm serv
 ---
 
 ## 🧱 Proje Yapısı
+
+- `apps/` — Mikroservislerin bulunduğu ana klasör
+  - `auth-service/` — Giriş / kayıt / JWT işlemleri
+  - `user-service/` — Kullanıcı profili işlemleri
+  - `tweet-service/` — Tweet oluşturma, listeleme, silme
+  - `follow-service/` — Takip / bırak işlemleri
+  - `like-service/` — Beğeni ekleme / kaldırma
+  - `api-gateway/` — Tüm servislerin merkezi erişim noktası
+- `packages/` — Ortak modüller ve yardımcı scriptler
+  - `kafkaClient/` — Kafka bağlantı nesneleri
+  - `errorHandler/` — Global hata yönetimi
+  - `docker-entrypoint.sh` — Her servis için başlatıcı script
+- `docker-compose.yaml` — Servislerin container orkestrasyonu
+- `Dockerfile` — Ortak Docker yapılandırması
+- `package.json` — Ana monorepo yapılandırma dosyası
+- `README.md` — Bu dokümantasyon
