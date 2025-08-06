@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/", userRoutes);
+app.use("/user", userRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 6001;

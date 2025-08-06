@@ -127,8 +127,7 @@ const getFollowingTweet = async (req, res, next) => {
       return res.status(401).json({ message: "Kullanıcı kimliği alınamadı." });
     }
 
-    // Kafka ile follow-service üzerinden takip edilen kullanıcıların ID'lerini al
-    const followingIds = await requestFollowingIds(userId); // örn: ['id1', 'id2', 'id3']
+    const followingIds = await requestFollowingIds(userId);
 
     if (!followingIds || followingIds.length === 0) {
       return res.status(200).json({
@@ -140,12 +139,10 @@ const getFollowingTweet = async (req, res, next) => {
       });
     }
 
-    // Sayfalama bilgisi
     const page = parseInt(req.query.page) || 1;
     const pageSize = 10;
     const skip = (page - 1) * pageSize;
 
-    // Takip edilenlerin tweetlerini getir
     const [tweets, count] = await Promise.all([
       prisma.tweet.findMany({
         where: {
@@ -214,14 +211,12 @@ const getUserTweet = async (req, res, next) => {
       }),
     ]);
 
-    // 🔁 Like count'ları topla ve birleştir
+    //Like count'ları topla ve birleştir
     const likeCounts = await requestLikeCounts(tweets.map(t => t.id));
     const tweetsWithLikes = tweets.map(tweet => ({
       ...tweet,
       likeCount: likeCounts[tweet.id] || 0
     }));
-
-    console.log("🔢 Like counts:", likeCounts); // ✅ artık tanımlı
 
     return res.status(200).json({
       tweets: tweetsWithLikes,
