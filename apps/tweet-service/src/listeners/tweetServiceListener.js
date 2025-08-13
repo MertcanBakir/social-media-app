@@ -23,7 +23,7 @@ async function tweetServiceListener() {
         console.error(`❌ Like count alınamadı: ${data?.error || "Bilinmeyen hata"}`);
         resolvePendingRequest(correlationId, { error: data?.error || "Like sayısı alınamadı" });
       }
-      if (type === "tweet.usernametoıd.result" && correlationId) {
+      if (type === "tweet.followingIds.result" && correlationId) {
         resolvePendingRequest(correlationId, data);
         console.log(`📨 tweet.usernametoıd.result alındı ve çözüldü: ${correlationId}`);
       }

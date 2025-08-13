@@ -2,6 +2,7 @@ const prisma = require("../utils/prisma");
 const requestUserByUsername = require("../events/requestUserByUsername");
 const { producer, consumer } = require("../utils/kafkaClient");
 const requestUsersByQuery = require("../events/requestUsersByQuery");
+const requestFollowStats = require("../events/requestFollowStats");
 
 
 const generateProfile = async (req, res, next) => {
@@ -91,26 +92,7 @@ const getProfile = async (req, res, next) => {
   }
 };
 
-function waitForResponse(correlationId) {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error("Timeout: Kullanıcı bilgisi alınamadı."));
-    }, 5000); // 5 saniye sonra pes eder
 
-    const onMessage = async ({ message }) => {
-      const { correlationId: incomingId, data } = JSON.parse(message.value.toString());
-      if (incomingId === correlationId) {
-        clearTimeout(timeout);
-        consumer.pause([{ topic: "user.fetched" }]); // Listener’ı durdur
-        resolve(data);
-      }
-    };
-
-    consumer.run({
-      eachMessage: onMessage,
-    });
-  });
-}
 
 const getDiffProfile = async (req, res, next) => {
   const { username } = req.params;

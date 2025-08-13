@@ -1,0 +1,167 @@
+.homeWrap {
+  display: flex;
+  justify-content: center;
+  padding: 24px 12px 60px;
+}
+
+.feed {
+  width: 100%;
+  max-width: 780px;
+}
+
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #2c2c2c;
+  background: #161616;
+  color: #fff;
+  cursor: pointer;
+}
+.tab.active {
+  background: #1f1f1f;
+  border-color: #3a3a3a;
+}
+
+/* Kart */
+.card {
+  background: #131313;
+  border: 1px solid #262626;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+/* CTA */
+.cta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cta button {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #2e2e2e;
+  background: #e6e6e6;
+  color: #000;
+}
+
+/* Compose */
+.compose textarea {
+  width: 100%;
+  min-height: 90px;
+  border-radius: 12px;
+  border: 1px solid #2a2a2a;
+  background: #1b1b1b;
+  color: #fff;
+  padding: 12px 14px;
+  resize: vertical;
+}
+.composeRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.fileBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  background: #1c1c1c;
+  color: #ddd;
+  cursor: pointer;
+}
+.fileBtn input {
+  display: none;
+}
+.composeRow button {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #2e2e2e;
+  background: #e6e6e6;
+  color: #000;
+}
+
+/* Tweet kartı */
+.tweetCard {
+  background: #121212;
+  border: 1px solid #262626;
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.tweetMedia {
+  width: 100%;
+  border-radius: 12px;
+  background: #0f0f0f;
+  margin-bottom: 10px;
+  max-height: 70vh;
+  object-fit: cover;
+}
+
+.tweetText {
+  margin: 8px 6px 10px;
+  color: #e8e8e8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tweetFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #a8a8a8;
+  font-size: 14px;
+  margin: 0 6px 2px;
+}
+
+/* Like butonu */
+.likeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid #2c2c2c;
+  color: #e8e8e8;
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: transform .1s ease, background .15s ease, border-color .15s ease;
+}
+.likeBtn:hover {
+  background: #1c1c1c;
+  border-color: #3a3a3a;
+  transform: translateY(-1px);
+}
+.likeBtn .heart {
+  line-height: 1;
+}
+.likeBtn .likeCount {
+  font-weight: 700;
+  min-width: 14px;
+  text-align: center;
+}
+.likeBtn.liked {
+  background: #1f1f1f;
+  border-color: #444;
+}
+
+.hint {
+  text-align: center;
+  padding: 10px 0;
+  color: #ddd;
+}
+.hint.muted {
+  color: #969696;
+}

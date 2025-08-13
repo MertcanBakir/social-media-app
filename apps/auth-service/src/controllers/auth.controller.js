@@ -41,16 +41,19 @@ const register = async (req, res, next) => {
   }
 };
 
+const normalize = (v) => (typeof v === "string" ? v.trim() : "");
+
 const login = async (req, res, next) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email ve şifre zorunludur." });
-  }
-
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
+    let { email, password } = req.body;
+    email = normalize(email)?.toLowerCase();
+    password = normalize(password);
 
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email ve şifre zorunludur." });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       const error = new Error("Geçersiz kimlik bilgileri.");
       error.statusCode = 401;
@@ -59,12 +62,17 @@ const login = async (req, res, next) => {
 
     const token = generateToken(user.id);
 
+    // ⚠️ Gateway şu an dev'de Set-Cookie'den "Secure" bayrağını kaldırıyor.
+    // Cookie bayraklarını backend ve gateway'de UYUMLU tutalım.
+    const isProd = process.env.NODE_ENV === "production";
+
     res
       .cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 gün
+        secure: isProd,        // prod: true (HTTPS); dev: false
+        sameSite: "lax",       // dev senaryosunda gateway de Lax'a çeviriyor → uyumlu
+        path: "/",             // logout’ta da aynı path ile temizleyeceğiz
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       })
       .status(200)
       .json({
@@ -76,7 +84,7 @@ const login = async (req, res, next) => {
         },
       });
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
@@ -105,13 +113,15 @@ const me = async (req, res, next) => {
 };
 
 const logout = async (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
+  // Cookie'yi SİLERKEN de AYNI path/samesite/secure bayrakları kullanılmalı
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: isProd,
+    sameSite: "lax",
+    path: "/",
   });
-
-  res.status(200).json({ message: "Çıkış yapıldı." });
+  return res.status(200).json({ message: "Çıkış yapıldı." });
 };
 
 const changePassword = async (req, res, next) => {

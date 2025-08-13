@@ -185,34 +185,6 @@ async function authServiceListener() {
 
           console.log(`🔍 Arama sonucu gönderildi: "${query}"`);
         }
-        if (type === "tweet.usernametoıd") {
-          const { username } = data;
-
-          const user = await prisma.user.findUnique({
-            where: { username },
-            select: {
-              id: true,
-              username: true,
-            },
-          });
-
-          await producer.send({
-            topic: "tweet-service-topic",
-            messages: [
-              {
-                key: correlationId,
-                value: JSON.stringify({
-                  type: "tweet.usernametoıd.result",
-                  correlationId,
-                  data: user || null,
-                }),
-              },
-            ],
-          });
-
-          console.log(`📤 tweet.usernametoıd.result yanıtı gönderildi: ${username}`);
-        }
-
       } catch (err) {
         console.error("❌ Kafka mesajı işlenirken hata:", err);
       }

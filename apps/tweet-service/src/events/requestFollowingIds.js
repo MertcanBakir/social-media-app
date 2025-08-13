@@ -9,11 +9,11 @@ async function requestFollowingIds(userId) {
     addPendingRequest(correlationId, resolve, reject);
 
     await producer.send({
-      topic: "auth-service-topic",
+      topic: "follow-service-topic",
       messages: [
         {
           value: JSON.stringify({
-            type: "tweet.usernametoıd",
+            type: "tweet.followingIds",
             correlationId,
             data: { userId },
           }),

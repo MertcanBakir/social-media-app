@@ -1,0 +1,112 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+
+  gap: 16px;
+  height: 64px;
+  padding: 0 16px;
+  background-color: #121212;
+  color: white;
+  border-bottom: 1px solid #2c2c2c;
+  overflow: visible;
+}
+
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+
+.searchWrap {
+  position: relative;
+  justify-self: center;
+  width: 100%;
+  max-width: 720px;
+}
+
+.search {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #2a2a2a;
+  background-color: #1b1b1b;
+  color: white;
+}
+
+.searchDrop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #151515;
+  border: 1px solid #2b2b2b;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  max-height: 380px;
+  overflow: auto;
+}
+
+.dropHint { padding: 10px 12px; color: #bdbdbd; font-size: 14px; }
+.dropErr  { padding: 10px 12px; color: #ffb4b4; font-size: 14px; }
+
+.dropItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: #eaeaea;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.dropItem:hover, .dropItem.active { background: #1f1f1f; }
+
+.dropAvatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  overflow: hidden; background: #2a2a2a;
+  display: grid; place-items: center; flex: 0 0 32px;
+}
+.dropAvatar img { width: 100%; height: 100%; object-fit: cover; }
+.dropAvatar span { font-weight: 700; color: #cfcfcf; }
+
+.dropMeta { display: flex; flex-direction: column; align-items: flex-start; }
+.dropName { font-size: 14px; }
+.dropEmail { font-size: 12px; color: #a8a8a8; }
+
+.avatar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatarImage {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.login {
+  background-color: #1da1f2;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 24px;
+  color: white;
+  cursor: pointer;
+}

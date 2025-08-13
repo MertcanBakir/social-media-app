@@ -1,0 +1,17 @@
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  color: rgba(255,255,255,.87);
+  background: #0f0f10;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body { margin: 0; }
+a { color: #8aa4ff; text-decoration: none; }
+a:hover { color: #b7c4ff; }
+button { font: inherit; cursor: pointer; }

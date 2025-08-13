@@ -32,13 +32,18 @@ services:
     platform: linux/amd64
     restart: always
     ports:
-      - "5433:5432" # dışarıya 5433 olarak açılıyor
+      - "5433:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 7362170Mm.
     volumes:
-    - pgdata:/var/lib/postgresql/data
-    
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
   auth-service:
     build: .
     command: ["auth-service", "6000"]
@@ -55,9 +60,17 @@ services:
         condition: service_healthy
       postgres:
         condition: service_started
+      redis:
+        condition: service_started
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_auth_db
+      - REGISTRY_NAME=auth-service
+      - REGISTRY_ADDRESS=http://auth-service
+      - REGISTRY_REDIS_URL=redis://redis:6379
+      - REGISTRY_TTL=30
+      - REGISTRY_INTERVAL=10000
+      - FRONTEND_ORIGIN=http://localhost:3000
 
   user-service:
     build: .
@@ -75,29 +88,17 @@ services:
         condition: service_healthy
       postgres:
         condition: service_started
-    environment:
-      - KAFKA_BROKER=kafka:9092
-      - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_user_db
-
-  follow-service:
-    build: .
-    command: ["follow-service", "6003"]
-    ports:
-      - "6003:6003"
-    volumes:
-      - .:/app
-      - ./apps/follow-service/.env:/app/apps/follow-service/.env
-    working_dir: /app
-    env_file:
-      - ./apps/follow-service/.env
-    depends_on:
-      kafka:
-        condition: service_healthy
-      postgres:
+      redis:
         condition: service_started
     environment:
       - KAFKA_BROKER=kafka:9092
-      - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_follow_db
+      - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_user_db
+      - REGISTRY_NAME=user-service
+      - REGISTRY_ADDRESS=http://user-service
+      - REGISTRY_REDIS_URL=redis://redis:6379
+      - REGISTRY_TTL=30
+      - REGISTRY_INTERVAL=10000
+      - FRONTEND_ORIGIN=http://localhost:3000
 
   tweet-service:
     build: .
@@ -115,10 +116,46 @@ services:
         condition: service_healthy
       postgres:
         condition: service_started
+      redis:
+        condition: service_started
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_tweet_db
-      
+      - REGISTRY_NAME=tweet-service
+      - REGISTRY_ADDRESS=http://tweet-service
+      - REGISTRY_REDIS_URL=redis://redis:6379
+      - REGISTRY_TTL=30
+      - REGISTRY_INTERVAL=10000
+      - FRONTEND_ORIGIN=http://localhost:3000
+
+  follow-service:
+    build: .
+    command: ["follow-service", "6003"]
+    ports:
+      - "6003:6003"
+    volumes:
+      - .:/app
+      - ./apps/follow-service/.env:/app/apps/follow-service/.env
+    working_dir: /app
+    env_file:
+      - ./apps/follow-service/.env
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_follow_db
+      - REGISTRY_NAME=follow-service
+      - REGISTRY_ADDRESS=http://follow-service
+      - REGISTRY_REDIS_URL=redis://redis:6379
+      - REGISTRY_TTL=30
+      - REGISTRY_INTERVAL=10000
+      - FRONTEND_ORIGIN=http://localhost:3000
+
   like-service:
     build: .
     command: ["like-service", "6004"]
@@ -135,10 +172,18 @@ services:
         condition: service_healthy
       postgres:
         condition: service_started
+      redis:
+        condition: service_started
     environment:
       - KAFKA_BROKER=kafka:9092
       - DATABASE_URL=postgresql://postgres:7362170Mm.@postgres:5432/social_app_like_db
-      
+      - REGISTRY_NAME=like-service
+      - REGISTRY_ADDRESS=http://like-service
+      - REGISTRY_REDIS_URL=redis://redis:6379
+      - REGISTRY_TTL=30
+      - REGISTRY_INTERVAL=10000
+      - FRONTEND_ORIGIN=http://localhost:3000
+
   api-gateway:
     build: .
     command: ["api-gateway"]
@@ -153,8 +198,16 @@ services:
       - follow-service
       - tweet-service
       - like-service
+      - redis
     environment:
       - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - FRONTEND_ORIGIN=http://localhost:3000
+      - AUTH_SERVICE_URL=http://auth-service:6000
+      - USER_SERVICE_URL=http://user-service:6001
+      - TWEET_SERVICE_URL=http://tweet-service:6002
+      - FOLLOW_SERVICE_URL=http://follow-service:6003
+      - LIKE_SERVICE_URL=http://like-service:6004
 
 volumes:
   pgdata:

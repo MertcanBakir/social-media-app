@@ -22,7 +22,7 @@ async function followServiceListener() {
           });
 
           await producer.send({
-            topic: "auth-service-topic",
+            topic: "user-service-topic",
             messages: [
               {
                 key: correlationId,
@@ -70,6 +70,36 @@ async function followServiceListener() {
                 key: correlationId,
                 value: JSON.stringify({
                   type: "tweet.followingIds.result",
+                  correlationId,
+                  data: followingIds,
+                }),
+              },
+            ],
+          });
+
+          console.log(`📨 followingIds gönderildi: ${userId}`);
+        } catch (err) {
+          console.error("❌ followingIds alınırken hata:", err);
+        }
+      }
+      if (type === "tweet.followingids" && correlationId) {
+        const { userId } = data;
+
+        try {
+          const following = await prisma.follow.findMany({
+            where: { followerId: userId },
+            select: { followingId: true },
+          });
+
+          const followingIds = following.map(f => f.followingId);
+
+          await producer.send({
+            topic: "tweet-service-topic",
+            messages: [
+              {
+                key: correlationId,
+                value: JSON.stringify({
+                  type: "tweet.followingids.result",
                   correlationId,
                   data: followingIds,
                 }),

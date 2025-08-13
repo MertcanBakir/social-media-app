@@ -1,0 +1,153 @@
+.up-container {
+  min-height: calc(100vh - 76px);
+  padding: 0 16px 40px;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.up-loading, .up-empty {
+  max-width: 880px;
+  margin: 120px auto 40px;
+  text-align: center;
+  color: #cfcfcf;
+}
+
+
+.up-cover {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  height: 220px;
+  background: #111;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.up-coverImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.up-coverPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(1000px 400px at 0% 100%, #161616 0%, #101010 60%, #101010 100%);
+}
+
+.up-card {
+  width: 100%;
+  max-width: 880px;
+  margin: -56px auto 24px;
+  background: rgba(26,26,26,.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 12px 44px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.05);
+}
+
+
+.up-avatarRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.up-avatarWrap {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid #1f1f1f;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.3);
+  overflow: hidden;
+  background: #0f0f0f;
+}
+.up-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.up-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.up-username {
+  font-size: 24px;
+  margin: 0;
+}
+.up-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #bdbdbd;
+  font-size: 14px;
+}
+.up-dot { opacity: .5; }
+
+.up-actions {
+  display: flex;
+  gap: 10px;
+}
+
+
+.up-bio {
+  margin: 14px 4px 0 4px;
+  color: #e7e7e7;
+}
+
+.up-counters {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.up-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: #fff;
+  font-size: 14px;
+}
+.up-count {
+  display: inline-block;
+  min-width: 22px;
+  text-align: center;
+  font-weight: 800;
+  background: #232323;
+  border: 1px solid rgba(255,255,255,.14);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* Buton stilleri */
+.up-btn {
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: .2s ease;
+  border: 1px solid transparent;
+}
+.up-btn.primary {
+  background: #1da1f2;
+  color: #fff;
+  border-color: #1da1f2;
+}
+.up-btn.primary:hover { filter: brightness(1.05); }
+.up-btn.outlined {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255,255,255,.3);
+}
+.up-btn.outlined:hover {
+  background: rgba(255,255,255,.08);
+}
+
